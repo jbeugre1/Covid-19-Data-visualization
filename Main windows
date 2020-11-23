@@ -1,0 +1,325 @@
+from tkinter import *
+import tkinter.ttk as tkr
+from PIL import ImageTk,Image
+import sqlite3
+
+
+
+class Accueil:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Authentica")
+        self.root.geometry("510x300")
+
+        self.fram = Frame(root)
+        self.fram.config(bg='red')
+        self.fram.grid(row=0, column=0, columnspan=2)
+
+        self.fram1 = Frame(root)
+        self.fram1.grid(row=1, column=0, padx=5)
+
+        self.fram2 = Frame(root)
+        self.fram2.grid(row=1, column=1, sticky="N")
+
+        self.treetime = tkr.Treeview(self.fram1)
+        self.vscrlbar = tkr.Scrollbar(self.fram1, orient="vertical", command=self.treetime.yview)
+        self.vscrlbar.pack(side='right', fill='y')
+
+        self.treetime.configure(yscrollcommand=self.vscrlbar.set)
+
+        self.treetime["columns"] = ("Nom du Pagne", "Couleur", "Quantité")
+        self.treetime.column("#0", width=45, minwidth=25, anchor="center")
+        self.treetime.column("Nom du Pagne", width=150, minwidth=25)
+        self.treetime.column("Couleur", width=100, minwidth=25)
+        self.treetime.column("Quantité", width=100, minwidth=25, anchor="center")
+
+        self.treetime.heading("#0", text="ID")
+        self.treetime.heading("Nom du Pagne", text="Nom du Pagne")
+        self.treetime.heading("Couleur", text="Couleur")
+        self.treetime.heading("Quantité", text="Quantité")
+
+        self.treetime.pack()
+
+        def addbuttonwindow():
+            top = Toplevel()
+            Addwindows(top)
+
+
+        def recherchewindow():
+            top = Toplevel()
+            Search(top)
+
+        # Test to delete value
+        def select_item(a):
+            test = self.treetime.selection()
+            print(test)
+            testa = []
+            for i in test:
+                testa.append(self.treetime.item(i)['text'])
+            print(testa[0])
+            return testa[0]
+
+        self.treetime.bind("<ButtonRelease-1>", select_item)
+
+        # Delete
+        def delete_item():
+            self.conn = sqlite3.connect('PagneInventaire.db')
+            c = self.conn.cursor()
+            test = select_item(Event)
+            print(test)
+            c.execute("DELETE from Pagne WHERE oid= " + str(test))
+            self.conn.commit()
+            self.conn.close()
+
+        def refresh():
+            self.treetime.delete(*self.treetime.get_children())
+            self.conn = sqlite3.connect('PagneInventaire.db')
+            c = self.conn.cursor()
+
+            c.execute("SELECT *,oid FROM Pagne")
+            records = c.fetchall()
+            for record in records:
+                tmp1 = record[0]
+                tmp2 = record[1]
+                tmp3 = record[2]
+                tmpid = record[3]
+                tmprow = self.treetime.insert("", "end", text=tmpid, values=(tmp1, tmp2, tmp3))
+
+        self.b1 = Button(self.fram2, text="Ajouter", command=addbuttonwindow).grid(row=0, column=0, sticky="W", pady=2)
+        self.b2 = Button(self.fram2, text="Supprimer", command=delete_item).grid(row=1, column=0, sticky="W", pady=2)
+        self.b4 = Button(self.fram2, text="Rechercher", command=recherchewindow).grid(row=2, column=0, sticky="W",
+                                                                                      pady=2)
+        self.b3 = Button(self.fram2, text="Rafraichir", command=refresh).grid(row=3, column=0, sticky="W", pady=2)
+
+        self.Lab = Label(self.fram, text="Inventaire", font=("Helvetica 18 bold"))
+        self.Lab.pack()
+
+        # Test cursor
+
+        # DATABASE CREATION
+        self.conn = sqlite3.connect('PagneInventaire.db')
+        c = self.conn.cursor()
+
+        '''
+        c.execute("""CREATE TABLE Pagne(
+                nomdepage text,
+                couleur text,
+                quantité integer)
+                """)
+        '''
+        # Fill List box
+
+        self.conn = sqlite3.connect('PagneInventaire.db')
+        c = self.conn.cursor()
+
+        c.execute("SELECT *,oid FROM Pagne")
+        records = c.fetchall()
+
+        def tablevalue(self):
+            for record in records:
+                tmp1 = record[0]
+                tmp2 = record[1]
+                tmp3 = record[2]
+                tmpid = record[3]
+                tmprow = self.treetime.insert("", "end", text=tmpid, values=(tmp1, tmp2, tmp3))
+
+        tablevalue(self)
+
+
+class Addwindows:
+
+    def __init__(self, root):
+        self.root = root
+        self.frame = Frame(self.root)
+        self.root.title("Authentica")
+        self.root.geometry("280x170")
+
+        self.lb1 = Label(self.root, text="Enregistrement de pagne")
+        self.lb1.config(font=130)
+        self.lb1.grid(row=0, column=0, columnspan=2, pady=15)
+
+        self.lb2 = Label(self.root, text="Nom du pagne").grid(row=1, column=0, padx=15)
+        self.tf1 = Entry(self.root)
+        self.tf1.grid(row=1, column=1)
+
+        self.lb3 = Label(self.root, text="Couleur").grid(row=2, column=0)
+        self.tf2 = Entry(self.root)
+        self.tf2.grid(row=2, column=1)
+
+        self.lb3 = Label(self.root, text="Quantité").grid(row=3, column=0)
+        self.tf3 = Entry(self.root)
+        self.tf3.grid(row=3, column=1)
+
+        self.frame.grid(row=5, column=0, columnspan=2)
+
+        def submit():
+            try:
+                if type(int(self.tf3.get())) is int:
+                    conn = sqlite3.connect('PagneInventaire.db')
+                    c = conn.cursor()
+                    c.execute("INSERT INTO Pagne VALUES (:tf1, :tf2, :tf3)",
+                              {
+                                  'tf1': self.tf1.get().lower(),
+                                  'tf2': self.tf2.get().lower(),
+                                  'tf3': self.tf3.get()
+
+                              }
+                              )
+
+                    conn.commit()
+                    conn.close()
+
+                    self.tf1.delete(0, END)
+                    self.tf2.delete(0, END)
+                    self.tf3.delete(0, END)
+                    try:
+                        self.labelerror.destroy()
+                    except AttributeError:
+                        print("No label to destroy")
+
+                    self.root.geometry("280x170")
+
+
+            except ValueError:
+                self.labelerror = Label(self.root, text="Le nombre de pagne doit etre un nombre", fg="red")
+                self.labelerror.grid(row=4, column=0, columnspan=2)
+                self.root.geometry("280x185")
+
+        def clear():
+            self.tf1.delete(0, END)
+            self.tf2.delete(0, END)
+            self.tf3.delete(0, END)
+
+        self.b1 = Button(self.frame, text="Ajouté", command=submit).grid(row=0, column=0, padx=3, pady=10)
+        self.b2 = Button(self.frame, text="Supprimé", command=clear).grid(row=0, column=1, padx=3)
+
+
+class Search:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Authentica")
+        self.root.geometry("410x380")
+        self.framtable = Frame(self.root)
+        self.treesearch = tkr.Treeview(self.framtable)
+
+        self.vscrlbar = tkr.Scrollbar(self.framtable, orient="vertical", command=self.treesearch.yview)
+        self.vscrlbar.pack(side='right', fill='y')
+
+        self.treesearch.configure(yscrollcommand=self.vscrlbar.set)
+
+        self.treesearch["columns"] = ("Nom du Pagne", "Couleur", "Quantité")
+        self.treesearch.column("#0", width=45, minwidth=25, anchor="center")
+        self.treesearch.column("Nom du Pagne", width=150, minwidth=25)
+        self.treesearch.column("Couleur", width=100, minwidth=25)
+        self.treesearch.column("Quantité", width=100, minwidth=25, anchor="center")
+
+        self.treesearch.heading("#0", text="ID")
+        self.treesearch.heading("Nom du Pagne", text="Nom du Pagne")
+        self.treesearch.heading("Couleur", text="Couleur")
+        self.treesearch.heading("Quantité", text="Quantité")
+        self.treesearch.pack()
+        self.framtable.pack()
+
+        self.labelframe = LabelFrame(self.root, text="Recherche")
+        self.labelframe.pack(fill="both", expand="yes")
+
+        self.label = Label(self.labelframe, text="Nom du pagne")
+        self.entry = Entry(self.labelframe, width=40)
+
+        self.label2 = Label(self.labelframe, text="ID du pagne")
+        self.entry2 = Entry(self.labelframe, width=40)
+
+        self.label.grid(row=0, column=0, ipady=10)
+        self.entry.grid(row=0, column=1)
+
+        self.label2.grid(row=1, column=0)
+        self.entry2.grid(row=1, column=1)
+
+        self.fram1 = Frame(self.labelframe)
+
+        def query():
+            self.conn = sqlite3.connect('PagneInventaire.db')
+            c = self.conn.cursor()
+            ndp = self.entry.get()
+            ndp2 = self.entry2.get()
+
+            self.treesearch.delete(*self.treesearch.get_children())
+
+            if self.entry2.get() == "":
+                sqlite_query = "SELECT * ,oid FROM 'Pagne' WHERE nomdepage = (?) "
+                c.execute(sqlite_query, (ndp,))
+                records = c.fetchall()
+                for record in records:
+                    tmp1 = record[0]
+                    tmp2 = record[1]
+                    tmp3 = record[2]
+                    tmpid = record[3]
+                    tmprow = self.treesearch.insert("", "end", text=tmpid, values=(tmp1, tmp2, tmp3))
+
+            if self.entry.get() == "":
+                sqlite_query = "SELECT * ,oid FROM 'Pagne' WHERE nomdepage = (?) "
+                c.execute("SELECT * ,oid FROM 'Pagne' WHERE oid = (?) ", (ndp2,))
+                records = c.fetchall()
+                for record in records:
+                    tmp1 = record[0]
+                    tmp2 = record[1]
+                    tmp3 = record[2]
+                    tmpid = record[3]
+                    tmprow = self.treesearch.insert("", "end", text=tmpid, values=(tmp1, tmp2, tmp3))
+
+        # Test to delete value
+        def select_item(a):
+            test = self.treesearch.selection()
+            print(test)
+            testa = []
+            for i in test:
+                testa.append(self.treesearch.item(i)['text'])
+                print(testa[0])
+                return testa[0]
+
+            self.treesearch.bind("<ButtonRelease-1>", select_item)
+
+        # Delete
+        def delete_item2():
+            self.conn = sqlite3.connect('PagneInventaire.db')
+            c = self.conn.cursor()
+            test = select_item(Event)
+            print(test)
+            c.execute("DELETE from Pagne WHERE oid= " + str(test))
+            self.conn.commit()
+            self.conn.close()
+
+        self.button1 = Button(self.fram1, text="Rechercher", command=query)
+        self.button2 = Button(self.fram1, text="Supprimer",command=delete_item2)
+        self.button1.grid(row=1, column=0, padx=20)
+        self.button2.grid(row=1, column=1)
+
+        self.fram1.grid(row=2, column=0, pady=10, columnspan=2)
+
+        # Test to delete value
+        def select_item(a):
+            test = self.treesearch.selection()
+            print(test)
+            testa = []
+            for i in test:
+                testa.append(self.treesearch.item(i)['text'])
+            print(testa[0])
+            return testa[0]
+
+        self.treesearch.bind("<ButtonRelease-1>", select_item)
+
+        # Delete
+        def delete_item2():
+            self.conn = sqlite3.connect('PagneInventaire.db')
+            c = self.conn.cursor()
+            test = select_item(Event)
+            print(test)
+            c.execute("DELETE from Pagne WHERE oid= " + str(test))
+            self.conn.commit()
+            self.conn.close()
+
+
+root = Tk()
+ins = Accueil(root)
+# omg = Addwindows(root)
+root.mainloop()
