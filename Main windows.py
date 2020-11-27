@@ -30,8 +30,10 @@ class windows1:
 
         self.fram2 = Frame(root)
         self.fram2.config(bg='BLUE')
-        self.fram2.grid(row=1, column=1,sticky=N+S)
-        
+        self.fram2.grid(row=1, column=1,sticky=N+S+E+W)
+        self.fram2.grid_rowconfigure(1, weight=1)
+        self.fram2.grid_columnconfigure(1, weight=1)
+
 
 
         def openwindows1():
@@ -81,6 +83,8 @@ class windows3:
         self.framtable = Frame(self.root)
         self.root.config(bg="grey")
 
+        self.label1 = Label(root,text="Covid-19 Progression in United States ")
+
 class windows4:
     def __init__(self, root):
         self.root = root
@@ -88,6 +92,63 @@ class windows4:
         self.root.geometry("1000x600")
         self.framtable = Frame(self.root)
         self.root.config(bg="grey")
+
+        self.fram1 = Frame(root)
+        self.fram2 = Frame(root)
+
+        self.fram1.grid(row=0,column=0)
+        self.fram2.grid(row=1,column=0)
+
+        option = [
+            "Alabama" ,
+            "Alaska",
+            "Arizona",
+            "Arkansas",
+            "California",
+            "Colorado",
+            "Connecticut",
+            "Delaware",
+            "Florida",
+            "Georgia",
+            "Hawaii",
+            "Idaho",
+            "Illinois",
+            "Indiana",
+            "Iowa",
+            "Kansas",
+            "Kentucky",
+            "Louisiana",
+            "Maine",
+            "Maryland",
+            "Massachusetts",
+            "Michigan",
+            "Minnesota",
+            "Mississippi",
+            "Missouri",
+            "Montana",
+            "Nebraska",
+            "Nevada",
+            "New Hampshire",
+            "New Jersey",
+            "New Mexico", 
+            "New York", 
+            "North Carolina",
+            "North Dakota",
+            "Ohio",
+            "Oklahoma",
+            "Oregon", 
+            "Pennsylvania", 
+            "Rhode Island", 
+            "South Carolina", 
+            "South Dakota",
+            "Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia", "Wisconsin", "Wyoming"
+        ]
+        clicked = StringVar()
+        clicked.set("States")
+        self.opt = OptionMenu(self.fram1,clicked, *option )
+        self.opt.pack()
+        
+         
 
        
 
